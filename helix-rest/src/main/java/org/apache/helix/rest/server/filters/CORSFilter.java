@@ -20,6 +20,9 @@ package org.apache.helix.rest.server.filters;
  */
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -53,8 +56,18 @@ public class CORSFilter implements ContainerRequestFilter, ContainerResponseFilt
   @Override
   public void filter(ContainerRequestContext request,
         ContainerResponseContext response) throws IOException {
-    // handle origin
-    response.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
-    response.getHeaders().putSingle("Access-Control-Allow-Credentials", "true");
+    // handle origin with allowed list
+    String[] allowDomain = {
+        "https://localhost*",
+        "https://*.linkedin.com",
+        "*.linkedin.biz"};
+
+    Set<String> allowedOrigins = new HashSet<>(Arrays.asList(allowDomain));
+    String originHeader = request.getHeaders().getFirst("Origin");
+
+    if(allowedOrigins.contains(originHeader)) {
+      response.getHeaders().putSingle("Access-Control-Allow-Origin", originHeader);
+      response.getHeaders().putSingle("Access-Control-Allow-Credentials", "true");
+    }
   }
 }
